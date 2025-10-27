@@ -1,0 +1,1177 @@
+syntax = "v1"
+
+info (
+	title:   "CMDB API"
+	desc:    "Configuration Management Database API"
+	author:  "CMDB Team"
+	email:   "cmdb@company.com"
+	version: "v1"
+)
+
+type (
+	// Host Pool相关类型
+	HostPool {
+		ID               int               `json:"id"`
+		HostName         string            `json:"host_name"`
+		HostIP           string            `json:"host_ip"`
+		HostType         string            `json:"host_type"`
+		H3cID            string            `json:"h3c_id"`
+		H3cStatus        string            `json:"h3c_status"`
+		DiskSize         int               `json:"disk_size"`
+		RAM              int               `json:"ram"`
+		VCPUs            int               `json:"vcpus"`
+		IfH3cSync        string            `json:"if_h3c_sync"`
+		H3cImgID         string            `json:"h3c_img_id"`
+		H3cHmName        string            `json:"h3c_hm_name"`
+		IsDelete         string            `json:"is_delete"`
+		LeafNumber       string            `json:"leaf_number"`
+		RackNumber       string            `json:"rack_number"`
+		RackHeight       int               `json:"rack_height"`
+		RackStartNumber  int               `json:"rack_start_number"`
+		FromFactor       int               `json:"from_factor"`
+		SerialNumber     string            `json:"serial_number"`
+		IsDeleted        bool              `json:"is_deleted"`
+		IsStatic         bool              `json:"is_static"`
+		IdcInfo          IdcInfo           `json:"idc_info,optional"`
+		HostApplications []HostApplication `json:"host_applications,optional"`
+	}
+	HostApplication {
+		ID             int    `json:"id"`
+		PoolID         int    `json:"pool_id"`
+		ServerType     string `json:"server_type"`
+		ServerVersion  string `json:"server_version"`
+		ServerSubtitle string `json:"server_subtitle"`
+		ClusterName    string `json:"cluster_name"`
+		ServerProtocol string `json:"server_protocol"`
+		ServerAddr     string `json:"server_addr"`
+		DepartmentName string `json:"department_name"`
+	}
+	IdcInfo {
+		ID             int    `json:"id"`
+		IdcName        string `json:"idc_name"`
+		IdcCode        string `json:"idc_code"`
+		IdcLocation    string `json:"idc_location,optional"`
+		IdcDescription string `json:"idc_description,optional"`
+	}
+	IdcListResponse {
+		Success bool      `json:"success"`
+		Message string    `json:"message"`
+		List    []IdcInfo `json:"list"`
+	}
+	// 应用管理相关类型
+	HostApplicationRequest {
+		HostId         int    `json:"host_id"`
+		ServerType     string `json:"server_type"`
+		ServerVersion  string `json:"server_version,optional"`
+		ServerSubtitle string `json:"server_subtitle,optional"`
+		ClusterName    string `json:"cluster_name,optional"`
+		ServerProtocol string `json:"server_protocol,optional"`
+		ServerAddr     string `json:"server_addr,optional"`
+		ServerPort     int32  `json:"server_port,optional"`
+		ServerRole     string `json:"server_role,optional"`
+		ServerStatus   string `json:"server_status,optional"`
+		DepartmentName string `json:"department_name,optional"`
+	}
+	AddHostsApplicationRequest {
+		Data []HostApplicationRequest `json:"data"`
+	}
+	ModifyHostsApplicationRequest {
+		Data []HostApplicationRequest `json:"data"`
+	}
+	DeleteHostsApplicationRequest {
+		AppIds []int `json:"app_ids"`
+	}
+	HostApplicationResponse {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+	}
+	// Server Resource相关类型
+	ServerResource {
+		ID             int               `json:"id"`
+		CreateAt       string            `json:"create_at"`
+		UpdateAt       string            `json:"update_at"`
+		PoolID         int               `json:"pool_id"`
+		ClusterName    string            `json:"cluster_name"`
+		GroupName      string            `json:"group_name"`
+		Ip             string            `json:"ip"`
+		Port           int               `json:"port"`
+		InstanceRole   string            `json:"instance_role"`
+		TotalMemory    float64           `json:"total_memory"`
+		UsedMemory     float64           `json:"used_memory"`
+		TotalDisk      float64           `json:"total_disk"`
+		UsedDisk       float64           `json:"used_disk"`
+		CPUCores       int               `json:"cpu_cores"`
+		CPULoad        float64           `json:"cpu_load"`
+		DateTime       string            `json:"date_time"`
+		DepartmentName string            `json:"department_name"`
+		IdcInfo        IdcInfo           `json:"idc_info,optional"` // IDC机房信息
+		Clusters       []HostClusterInfo `json:"clusters"` // 新增：主机所属的集群列表
+		// 百分比字段
+		CpuPercentMax  float64 `json:"cpu_percent_max,optional"`
+		CpuPercentAvg  float64 `json:"cpu_percent_avg,optional"`
+		CpuPercentMin  float64 `json:"cpu_percent_min,optional"`
+		MemPercentMax  float64 `json:"mem_percent_max,optional"`
+		MemPercentAvg  float64 `json:"mem_percent_avg,optional"`
+		MemPercentMin  float64 `json:"mem_percent_min,optional"`
+		DiskPercentMax float64 `json:"disk_percent_max,optional"`
+		DiskPercentAvg float64 `json:"disk_percent_avg,optional"`
+		DiskPercentMin float64 `json:"disk_percent_min,optional"`
+	}
+	// 主机资源最大利用率数据类型
+	ServerResourceMax {
+		ID            int               `json:"id"`
+		CreateAt      string            `json:"create_at"`
+		UpdateAt      string            `json:"update_at"`
+		PoolID        int               `json:"pool_id"`
+		ClusterName   string            `json:"cluster_name"`
+		GroupName     string            `json:"group_name"`
+		Ip            string            `json:"ip"`
+		TotalMemory   float64           `json:"total_memory"`
+		MaxUsedMemory float64           `json:"max_used_memory"`
+		TotalDisk     float64           `json:"total_disk"`
+		MaxUsedDisk   float64           `json:"max_used_disk"`
+		CPUCores      int               `json:"cpu_cores"`
+		MaxCPULoad    float64           `json:"max_cpu_load"`
+		MaxDateTime   string            `json:"max_date_time"`
+		HostName      string            `json:"host_name"`
+		HostType      string            `json:"host_type"`
+		IdcInfo       IdcInfo           `json:"idc_info,optional"` // IDC机房信息
+		Clusters      []HostClusterInfo `json:"clusters,optional"`
+		// 百分比字段
+		CpuPercentMax  float64 `json:"cpu_percent_max,optional"`
+		CpuPercentAvg  float64 `json:"cpu_percent_avg,optional"`
+		CpuPercentMin  float64 `json:"cpu_percent_min,optional"`
+		MemPercentMax  float64 `json:"mem_percent_max,optional"`
+		MemPercentAvg  float64 `json:"mem_percent_avg,optional"`
+		MemPercentMin  float64 `json:"mem_percent_min,optional"`
+		DiskPercentMax float64 `json:"disk_percent_max,optional"`
+		DiskPercentAvg float64 `json:"disk_percent_avg,optional"`
+		DiskPercentMin float64 `json:"disk_percent_min,optional"`
+	}
+	// 主机所属集群信息
+	HostClusterInfo {
+		ClusterName      string `json:"cluster_name"`
+		ClusterGroupName string `json:"cluster_group_name"`
+		DepartmentName   string `json:"department_name"`
+	}
+	// 集群资源请求参数
+	ClusterResourceRequest {
+		StartDate   string `form:"startDate,optional"`
+		EndDate     string `form:"endDate,optional"`
+		ClusterName string `form:"clusterName,optional"`
+		GroupName   string `form:"groupName,optional"`
+	}
+	// 集群成员节点资源信息
+	ClusterMemberResource {
+		ID               int     `json:"id"`
+		ClusterName      string  `json:"cluster_name"`
+		ClusterGroupName string  `json:"cluster_group_name"`
+		Ip               string  `json:"ip"`
+		HostName         string  `json:"host_name"`
+		Port             int     `json:"port"`
+		InstanceRole     string  `json:"instance_role"`
+		TotalMemory      float64 `json:"total_memory"`
+		UsedMemory       float64 `json:"used_memory"`
+		TotalDisk        float64 `json:"total_disk"`
+		UsedDisk         float64 `json:"used_disk"`
+		CPUCores         int     `json:"cpu_cores"`
+		CPULoad          float64 `json:"cpu_load"`
+		DateTime         string  `json:"date_time"`
+		DepartmentName   string  `json:"department_name"`
+		SequenceNumber   int64   `json:"sequence_number"` // 序列号，用于确保数据唯一性和排序一致性
+		// 百分比字段
+		CpuPercentMax  float64 `json:"cpu_percent_max,optional"`
+		CpuPercentAvg  float64 `json:"cpu_percent_avg,optional"`
+		CpuPercentMin  float64 `json:"cpu_percent_min,optional"`
+		MemPercentMax  float64 `json:"mem_percent_max,optional"`
+		MemPercentAvg  float64 `json:"mem_percent_avg,optional"`
+		MemPercentMin  float64 `json:"mem_percent_min,optional"`
+		DiskPercentMax float64 `json:"disk_percent_max,optional"`
+		DiskPercentAvg float64 `json:"disk_percent_avg,optional"`
+		DiskPercentMin float64 `json:"disk_percent_min,optional"`
+	}
+	// 集群最大资源利用率信息
+	ClusterResourceMax {
+		ClusterName      string `json:"cluster_name"`
+		ClusterGroupName string `json:"cluster_group_name"`
+		DepartmentName   string `json:"department_name"`
+		NodeCount        int    `json:"node_count"`
+		// 平均值字段
+		AvgCPULoad     float64 `json:"avg_cpu_load"`
+		AvgMemoryUsage float64 `json:"avg_memory_usage"`
+		AvgDiskUsage   float64 `json:"avg_disk_usage"`
+		// 最大值字段
+		MaxCPULoad     float64                 `json:"max_cpu_load"`
+		MaxMemoryUsage float64                 `json:"max_memory_usage"`
+		MaxDiskUsage   float64                 `json:"max_disk_usage"`
+		TotalMemory    float64                 `json:"total_memory"`
+		TotalDisk      float64                 `json:"total_disk"`
+		MaxUsedMemory  float64                 `json:"max_used_memory"`
+		MaxUsedDisk    float64                 `json:"max_used_disk"`
+		MaxDateTime    string                  `json:"max_date_time"`
+		MemberNodes    []ClusterMemberResource `json:"member_nodes"`
+		// 百分比字段
+		CpuPercentMax  float64 `json:"cpu_percent_max,optional"`
+		CpuPercentAvg  float64 `json:"cpu_percent_avg,optional"`
+		CpuPercentMin  float64 `json:"cpu_percent_min,optional"`
+		MemPercentMax  float64 `json:"mem_percent_max,optional"`
+		MemPercentAvg  float64 `json:"mem_percent_avg,optional"`
+		MemPercentMin  float64 `json:"mem_percent_min,optional"`
+		DiskPercentMax float64 `json:"disk_percent_max,optional"`
+		DiskPercentAvg float64 `json:"disk_percent_avg,optional"`
+		DiskPercentMin float64 `json:"disk_percent_min,optional"`
+	}
+	ServerResourceRequest {
+		StartDate      string `form:"startDate,optional"`
+		EndDate        string `form:"endDate,optional"`
+		Ip             string `form:"ip,optional"`
+		Cluster        string `form:"cluster,optional"`
+		DepartmentName string `form:"departmentName,optional"`
+	}
+	// Cluster相关类型
+	ClusterGroup {
+		ID             int    `json:"id"`
+		ClusterName    string `json:"cluster_name"`
+		GroupName      string `json:"group_name"`
+		DepartmentName string `json:"department_name"`
+	}
+	IDCUsage {
+		IDCName        string  `json:"idc_name"`
+		TotalInstances int     `json:"total_instances"`
+		AvgCPUUsage    float64 `json:"avg_cpu_usage"`
+		AvgMemoryUsage float64 `json:"avg_memory_usage"`
+		AvgDiskUsage   float64 `json:"avg_disk_usage"`
+	}
+	ClusterResourceSummary {
+		ClusterName string  `json:"cluster_name"`
+		ClusterIPs  string  `json:"cluster_ips"`
+		MaxCPU      float64 `json:"max_cpu"`
+		AvgCPU      float64 `json:"avg_cpu"`
+		MaxMemory   float64 `json:"max_memory"`
+		AvgMemory   float64 `json:"avg_memory"`
+		MaxDisk     float64 `json:"max_disk"`
+		AvgDisk     float64 `json:"avg_disk"`
+	}
+	BackupRestoreCheckInfo {
+		ID          int    `json:"id"`
+		CheckSeq    string `json:"check_seq"`
+		CheckDB     string `json:"check_db"`
+		CheckStatus string `json:"check_status"`
+		CheckResult string `json:"check_result"`
+		CheckTime   string `json:"check_time"`
+	}
+	ClusterConfirmSummary {
+		ReportFileURL string                 `json:"report_file_url"`
+		PluginResults map[string]interface{} `json:"plugin_results"`
+	}
+	// 邮件相关类型
+	EmailRequest {
+		To      string `json:"to"`
+		Subject string `json:"subject"`
+		Content string `json:"content"`
+	}
+	// 报告相关类型
+	ReportRequest {
+		Email string `json:"email"`
+		HTML  string `json:"html,optional"`
+	}
+	// 资源分析相关类型
+	ResourceUsageData {
+		GroupName       string  `json:"group_name"`
+		ClusterName     string  `json:"cluster_name"`
+		DepartmentName  string  `json:"department_name"`
+		CPUPeakUsage    float64 `json:"cpu_peak_usage"`
+		CPUThreshold    float64 `json:"cpu_threshold"`
+		MemoryPeakUsage float64 `json:"memory_peak_usage"`
+		MemoryThreshold float64 `json:"memory_threshold"`
+		DiskPeakUsage   float64 `json:"disk_peak_usage"`
+		DiskThreshold   float64 `json:"disk_threshold"`
+	}
+	// 通用响应类型
+	BaseResponse {
+		Message string `json:"message"`
+		Success bool   `json:"success,optional"`
+	}
+	// 数据库同步详情
+	DatabaseSyncDetail {
+		DatabaseType  string   `json:"database_type"`
+		SyncedCount   int      `json:"synced_count"`
+		ClusterGroups []string `json:"cluster_groups"`
+	}
+	// 同步集群组响应类型
+	SyncClusterGroupsResponse {
+		Message     string               `json:"message"`
+		Success     bool                 `json:"success"`
+		SyncedCount int                  `json:"synced_count"`
+		Details     []DatabaseSyncDetail `json:"details"`
+	}
+	// 列表响应类型
+	HostPoolListResponse {
+		List []HostPool `json:"list"`
+	}
+	ServerResourceListResponse {
+		Success bool             `json:"success"`
+		Message string           `json:"message"`
+		List    []ServerResource `json:"list"`
+	}
+	ServerResourceMaxListResponse {
+		Success bool                `json:"success"`
+		Message string              `json:"message"`
+		List    []ServerResourceMax `json:"list"`
+	}
+	// 集群资源响应类型
+	ClusterResourceListResponse {
+		Success bool                    `json:"success"`
+		Message string                  `json:"message"`
+		List    []ClusterMemberResource `json:"list"`
+	}
+	ClusterResourceMaxListResponse {
+		Success bool                 `json:"success"`
+		Message string               `json:"message"`
+		List    []ClusterResourceMax `json:"list"`
+	}
+	// 磁盘预测相关类型
+	DiskPrediction {
+		ID                      int               `json:"id"`
+		IP                      string            `json:"ip"`
+		ClusterName             string            `json:"cluster_name"`
+		GroupName               string            `json:"group_name"`
+		DepartmentName          string            `json:"department_name"`
+		CurrentDiskUsagePercent float32           `json:"current_disk_usage_percent"`
+		TotalDisk               float32           `json:"total_disk"`
+		UsedDisk                float32           `json:"used_disk"`
+		DailyGrowthRate         float32           `json:"daily_growth_rate"`
+		PredictedFullDate       string            `json:"predicted_full_date"`
+		DaysUntilFull           int32             `json:"days_until_full"`
+		IsHighRisk              bool              `json:"is_high_risk"`
+		CreateAt                string            `json:"create_at"`
+		UpdateAt                string            `json:"update_at"`
+		Clusters                []HostClusterInfo `json:"clusters,optional"`
+		IdcInfo                 IdcInfo           `json:"idc_info,optional"` // IDC机房信息
+	}
+	DiskPredictionListResponse {
+		Success bool             `json:"success"`
+		Message string           `json:"message"`
+		List    []DiskPrediction `json:"list"`
+	}
+	ClusterGroupListResponse {
+		List []ClusterGroup `json:"list"`
+	}
+	IDCUsageListResponse {
+		List []IDCUsage `json:"list"`
+	}
+	ClusterResourceSummaryListResponse {
+		List []ClusterResourceSummary `json:"list"`
+	}
+	BackupRestoreCheckInfoListResponse {
+		List []BackupRestoreCheckInfo `json:"list"`
+	}
+	DiskPredictionResponse {
+		Predictions map[string]interface{} `json:"predictions"`
+	}
+	// CSV数据上传相关类型
+	LoadServerMetricsCSVRequest  {}
+	LoadServerMetricsCSVProgressResponse {
+		Success            bool    `json:"success"`
+		Message            string  `json:"message"`
+		TotalRows          int     `json:"total_rows"`
+		ProcessedRows      int     `json:"processed_rows"`
+		ProgressPercentage float32 `json:"progress_percentage"`
+		IsCompleted        bool    `json:"is_completed"`
+		ErrorDetail        string  `json:"error_detail,optional"`
+		ErrorLine          int     `json:"error_line,optional"`
+		LastUpdatedTime    string  `json:"last_updated_time,optional"`
+	}
+	// 监控数据核对相关类型
+	MonitoringVerificationRequest {
+		StartTime string `json:"start_time"`
+		EndTime   string `json:"end_time"`
+	}
+	HostWithoutMonitoring {
+		HostIp     string `json:"host_ip"`
+		HostName   string `json:"host_name"`
+		PoolName   string `json:"pool_name"`
+		CreateTime string `json:"create_time"`
+	}
+	MonitoringVerificationResponse {
+		Success bool                       `json:"success"`
+		Message string                     `json:"message"`
+		Data    MonitoringVerificationData `json:"data"`
+	}
+	MonitoringVerificationData {
+		TotalHosts                 int                     `json:"total_hosts"`
+		HostsWithMonitoring        int                     `json:"hosts_with_monitoring"`
+		HostsWithoutMonitoring     int                     `json:"hosts_without_monitoring"`
+		MonitoringCoverage         float32                 `json:"monitoring_coverage"`
+		HostsWithoutMonitoringList []HostWithoutMonitoring `json:"hosts_without_monitoring_list"`
+	}
+	// 硬件资源验证相关类型
+	HardwareResourceVerificationRequest {
+		HostIpList     []string `json:"host_ip_list"`
+		ResourceType   string   `json:"resource_type"` // cpu, memory, disk
+		TargetPercent  int      `json:"target_percent"` // 1-100
+		Duration       int      `json:"duration"` // 秒
+		ForceExecution bool     `json:"force_execution,optional"` // 强制执行，默认false
+		ScriptParams   string   `json:"script_params,optional"` // JSON格式的额外参数
+	}
+	HardwareResourceVerificationResponse {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		TaskId  string `json:"task_id"`
+	}
+	HardwareResourceVerificationStatus {
+		Id              int    `json:"id"`
+		TaskId          string `json:"task_id"`
+		HostIp          string `json:"host_ip"`
+		ResourceType    string `json:"resource_type"`
+		TargetPercent   int    `json:"target_percent"`
+		Duration        int    `json:"duration"`
+		ExecutionStatus string `json:"execution_status"` // pending, running, completed, failed
+		StartTime       string `json:"start_time,optional"`
+		EndTime         string `json:"end_time,optional"`
+		ExitCode        int    `json:"exit_code,optional"`
+		ResultSummary   string `json:"result_summary,optional"`
+		CreateTime      string `json:"create_time"`
+		SSHError        string `json:"ssh_error,optional"`
+	}
+	HardwareResourceVerificationStatusRequest {
+		HostIpList   []string `form:"host_ip_list,optional"`
+		ResourceType string   `form:"resource_type,optional"`
+	}
+	HardwareResourceVerificationStatusResponse {
+		Success             bool                                 `json:"success"`
+		Message             string                               `json:"message"`
+		VerificationRecords []HardwareResourceVerificationStatus `json:"verification_records"`
+	}
+	HardwareResourceVerificationHistory {
+		Id              int    `json:"id"`
+		TaskId          string `json:"task_id"`
+		HostIp          string `json:"host_ip"`
+		ResourceType    string `json:"resource_type"`
+		TargetPercent   int    `json:"target_percent"`
+		Duration        int    `json:"duration"`
+		ExecutionStatus string `json:"execution_status"`
+		StartTime       string `json:"start_time,optional"`
+		EndTime         string `json:"end_time,optional"`
+		ExitCode        int    `json:"exit_code,optional"`
+		StdoutLog       string `json:"stdout_log,optional"`
+		StderrLog       string `json:"stderr_log,optional"`
+		ResultSummary   string `json:"result_summary,optional"`
+		CreateTime      string `json:"create_time"`
+		SSHError        string `json:"ssh_error,optional"`
+	}
+	HardwareResourceVerificationHistoryRequest {
+		HostIp       string `form:"host_ip"`
+		ResourceType string `form:"resource_type,optional"`
+		Limit        int    `form:"limit,optional"`
+	}
+	HardwareResourceVerificationHistoryResponse {
+		Success        bool                                  `json:"success"`
+		Message        string                                `json:"message"`
+		HistoryRecords []HardwareResourceVerificationHistory `json:"history_records"`
+	}
+	// 定时任务相关类型
+	CreateScheduledTaskRequest {
+		TaskName       string   `json:"task_name"`
+		Description    string   `json:"description,optional"`
+		CronExpression string   `json:"cron_expression"`
+		HostIpList     []string `json:"host_ip_list"`
+		ResourceType   string   `json:"resource_type"` // cpu, memory, disk
+		TargetPercent  int      `json:"target_percent"` // 1-100
+		Duration       int      `json:"duration"` // 秒
+		ScriptParams   string   `json:"script_params,optional"` // JSON格式
+		ForceExecution bool     `json:"force_execution,optional"`
+		CreatedBy      string   `json:"created_by,optional"`
+	}
+	CreateScheduledTaskResponse {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		TaskId  int    `json:"task_id"`
+	}
+	UpdateScheduledTaskRequest {
+		Id             int      `path:"id"`
+		TaskName       string   `json:"task_name"`
+		Description    string   `json:"description,optional"`
+		CronExpression string   `json:"cron_expression"`
+		HostIpList     []string `json:"host_ip_list"`
+		ResourceType   string   `json:"resource_type"` // cpu, memory, disk
+		TargetPercent  int      `json:"target_percent"` // 1-100
+		Duration       int      `json:"duration"` // 秒
+		ScriptParams   string   `json:"script_params,optional"` // JSON格式
+		ForceExecution bool     `json:"force_execution,optional"`
+	}
+	UpdateScheduledTaskResponse {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+	}
+	GetScheduledTasksRequest {
+		ResourceType string `form:"resource_type,optional"`
+		EnabledOnly  bool   `form:"enabled_only,optional"`
+	}
+	ScheduledTaskInfo {
+		Id                int    `json:"id"`
+		TaskName          string `json:"task_name"`
+		Description       string `json:"description,optional"`
+		CronExpression    string `json:"cron_expression"`
+		HostIpList        string `json:"host_ip_list"` // JSON格式的主机IP列表
+		ResourceType      string `json:"resource_type"`
+		TargetPercent     int    `json:"target_percent"`
+		Duration          int    `json:"duration"`
+		ScriptParams      string `json:"script_params,optional"`
+		ForceExecution    bool   `json:"force_execution"`
+		IsEnabled         bool   `json:"is_enabled"`
+		CreatedBy         string `json:"created_by,optional"`
+		CreatedAt         string `json:"created_at"`
+		UpdatedAt         string `json:"updated_at"`
+		LastExecutionTime string `json:"last_execution_time,optional"`
+		NextExecutionTime string `json:"next_execution_time,optional"`
+	}
+	GetScheduledTasksResponse {
+		Success bool                `json:"success"`
+		Message string              `json:"message"`
+		Tasks   []ScheduledTaskInfo `json:"tasks"`
+	}
+	EnableScheduledTaskRequest {
+		Id        int  `json:"id"`
+		IsEnabled bool `json:"is_enabled"`
+	}
+	EnableScheduledTaskResponse {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+	}
+	DeleteScheduledTaskRequest {
+		Id int `path:"id"`
+	}
+	DeleteScheduledTaskResponse {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+	}
+	GetScheduledTaskExecutionHistoryRequest {
+		ScheduledTaskId int `form:"scheduled_task_id"`
+		Limit           int `form:"limit,optional"`
+	}
+	ScheduledTaskExecutionHistoryInfo {
+		Id              int    `json:"id"`
+		ScheduledTaskId int    `json:"scheduled_task_id"`
+		ExecutionTaskId string `json:"execution_task_id"`
+		ExecutionTime   string `json:"execution_time"`
+		ExecutionStatus string `json:"execution_status"` // success, failed, partial
+		TotalHosts      int    `json:"total_hosts"`
+		SuccessHosts    int    `json:"success_hosts"`
+		FailedHosts     int    `json:"failed_hosts"`
+		ErrorMessage    string `json:"error_message,optional"`
+	}
+	GetScheduledTaskExecutionHistoryResponse {
+		Success        bool                                `json:"success"`
+		Message        string                              `json:"message"`
+		HistoryRecords []ScheduledTaskExecutionHistoryInfo `json:"history_records"`
+	}
+	// 任务执行详情相关类型
+	ScheduledTaskExecutionDetailsRequest {
+		ExecutionTaskId string `path:"execution_task_id"`
+	}
+	ScheduledTaskExecutionDetail {
+		HostIp          string `json:"host_ip"`
+		ResourceType    string `json:"resource_type"`
+		TargetPercent   int    `json:"target_percent"`
+		Duration        int    `json:"duration"`
+		ExecutionStatus string `json:"execution_status"`
+		StartTime       string `json:"start_time,optional"`
+		EndTime         string `json:"end_time,optional"`
+		ExitCode        int    `json:"exit_code,optional"`
+		StdoutLog       string `json:"stdout_log,optional"`
+		StderrLog       string `json:"stderr_log,optional"`
+		ResultSummary   string `json:"result_summary,optional"`
+		SSHError        string `json:"ssh_error,optional"`
+		CreateTime      string `json:"create_time"`
+	}
+	ScheduledTaskExecutionInfo {
+		ScheduledTaskId int                            `json:"scheduled_task_id"`
+		TaskName        string                         `json:"task_name"`
+		ExecutionTaskId string                         `json:"execution_task_id"`
+		ExecutionTime   string                         `json:"execution_time"`
+		ExecutionStatus string                         `json:"execution_status"`
+		TotalHosts      int                            `json:"total_hosts"`
+		SuccessHosts    int                            `json:"success_hosts"`
+		FailedHosts     int                            `json:"failed_hosts"`
+		ResourceType    string                         `json:"resource_type"`
+		TargetPercent   int                            `json:"target_percent"`
+		Duration        int                            `json:"duration"`
+		HostDetails     []ScheduledTaskExecutionDetail `json:"host_details"`
+	}
+	GetScheduledTaskExecutionDetailsResponse {
+		Success bool                       `json:"success"`
+		Message string                     `json:"message"`
+		Data    ScheduledTaskExecutionInfo `json:"data"`
+	}
+	// 硬件信息获取相关类型
+	FetchHostsHardwareInfoRequest {
+		HostIpList []string `json:"host_ip_list,optional"` // 要获取硬件信息的主机IP列表，为空则获取所有主机
+	}
+	HostHardwareInfo {
+		HostIp   string `json:"host_ip"`
+		HostName string `json:"host_name"`
+		Disk     int64  `json:"disk"` // 磁盘大小(GB)
+		Ram      int64  `json:"ram"` // 内存大小(GB)
+		Vcpus    int64  `json:"vcpus"` // CPU核数
+		Message  string `json:"message"` // 获取结果或错误信息
+		Success  bool   `json:"success"` // 是否成功获取
+	}
+	FetchHostsHardwareInfoResponse {
+		Success          bool               `json:"success"`
+		Message          string             `json:"message"`
+		TotalHosts       int                `json:"total_hosts"` // 总主机数
+		UpdatedHosts     int                `json:"updated_hosts"` // 成功更新的主机数
+		FailedHosts      int                `json:"failed_hosts"` // 失败的主机数
+		HardwareInfoList []HostHardwareInfo `json:"hardware_info_list"` // 详细硬件信息列表
+	}
+	// 外部CMDB同步相关类型
+	SyncExternalCmdbRequest {
+		PageSize    int  `json:"page_size,optional"` // 每页数据量，默认100
+		HostOwner   int  `json:"host_owner,optional"` // 主机所有者ID，为空则同步所有
+		ForceUpdate bool `json:"force_update,optional"` // 是否强制更新已存在的主机信息
+	}
+	ExternalCmdbHost {
+		CmdbId       string `json:"cmdb_id"`
+		DomainNum    string `json:"domain_num"`
+		HostName     string `json:"host_name"`
+		HostIp       string `json:"host_ip"`
+		HostType     string `json:"host_type"`
+		HostOwner    string `json:"host_owner"`
+		OpsIamCode   string `json:"ops_iam_code"`
+		OwnerGroup   string `json:"owner_group"`
+		OwnerIamCode string `json:"owner_iam_code"`
+		H3cId        string `json:"h3c_id"`
+		H3cStatus    string `json:"h3c_status"`
+		Disk         int64  `json:"disk"` // 磁盘大小(GB)
+		Ram          int64  `json:"ram"` // 内存大小(MB)
+		Vcpus        int64  `json:"vcpus"` // CPU核数
+		CreatedAt    string `json:"created_at"`
+		UpdatedAt    string `json:"updated_at"`
+		IfH3cSync    string `json:"if_h3c_sync"`
+		H3cImageId   string `json:"h3c_image_id"`
+		H3cHmName    string `json:"h3c_hm_name"`
+		IsDelete     string `json:"is_delete"`
+		AppName      string `json:"app_name"` // 部署的应用名称
+		DataSource   string `json:"data_source"` // 数据源
+		BizGroup     string `json:"biz_group"` // 业务组
+		OpsBizGroup  string `json:"ops_biz_group"` // 运维业务组
+		Message      string `json:"message"` // 同步结果消息
+		Success      bool   `json:"success"` // 同步是否成功
+	}
+	SyncExternalCmdbResponse {
+		Success        bool               `json:"success"`
+		Message        string             `json:"message"`
+		TotalPages     int                `json:"total_pages"` // 总页数
+		ProcessedPages int                `json:"processed_pages"` // 已处理页数
+		TotalHosts     int                `json:"total_hosts"` // 总主机数
+		SyncedHosts    int                `json:"synced_hosts"` // 成功同步的主机数
+		UpdatedHosts   int                `json:"updated_hosts"` // 更新的主机数
+		FailedHosts    int                `json:"failed_hosts"` // 失败的主机数
+		SyncResults    []ExternalCmdbHost `json:"sync_results"` // 同步结果详情
+	}
+	// 手动添加主机相关类型
+	ManualHostHardwareInfo {
+		DiskSize        int    `json:"disk_size"` // 磁盘大小(GB)
+		Ram             int    `json:"ram"` // 内存大小(GB)
+		Vcpus           int    `json:"vcpus"` // CPU核数
+		HostType        string `json:"host_type"` // 主机类型
+		H3cId           string `json:"h3c_id"` // H3C ID
+		H3cStatus       string `json:"h3c_status"` // H3C状态
+		IfH3cSync       string `json:"if_h3c_sync"` // 是否H3C同步
+		H3cImgId        string `json:"h3c_img_id"` // H3C镜像ID
+		H3cHmName       string `json:"h3c_hm_name"` // H3C主机名
+		LeafNumber      string `json:"leaf_number"` // 叶子编号
+		RackNumber      string `json:"rack_number"` // 机柜编号
+		RackHeight      int    `json:"rack_height"` // 机柜高度
+		RackStartNumber int    `json:"rack_start_number"` // 机柜起始编号
+		FromFactor      int    `json:"from_factor"` // From因子
+		SerialNumber    string `json:"serial_number"` // 序列号
+	}
+	HostApplicationInfo {
+		ServerType     string `json:"server_type"` // 服务类型
+		ServerVersion  string `json:"server_version"` // 服务版本
+		ServerSubtitle string `json:"server_subtitle"` // 服务子标题
+		ClusterName    string `json:"cluster_name"` // 集群名称
+		ServerProtocol string `json:"server_protocol"` // 服务协议
+		ServerAddr     string `json:"server_addr"` // 服务地址
+		ServerPort     int    `json:"server_port"` // 服务端口
+		ServerRole     string `json:"server_role"` // 服务角色
+		ServerStatus   string `json:"server_status"` // 服务状态
+		DepartmentName string `json:"department_name"` // 部门名称
+	}
+	ManualAddHostRequest {
+		HostIp                string                 `json:"host_ip"` // 主机IP（必填）
+		HostName              string                 `json:"host_name,optional"` // 主机名
+		HardwareInfo          ManualHostHardwareInfo `json:"hardware_info,optional"` // 硬件信息
+		Applications          []HostApplicationInfo  `json:"applications,optional"` // 应用信息列表
+		AutoFetchFromCmdb     bool                   `json:"auto_fetch_from_cmdb,optional"` // 是否从CMDB自动获取信息
+		AutoFetchFromClusters bool                   `json:"auto_fetch_from_clusters,optional"` // 是否从集群实例表自动获取应用信息
+		IdcId                 int                    `json:"idc_id,optional"` // IDC机房ID
+	}
+	AutoFetchResult {
+		Success      bool                   `json:"success"`
+		Message      string                 `json:"message"`
+		HardwareInfo ManualHostHardwareInfo `json:"hardware_info,optional"`
+		Applications []HostApplicationInfo  `json:"applications,optional"`
+	}
+	ManualAddHostResponse {
+		Success         bool            `json:"success"`
+		Message         string          `json:"message"`
+		AutoFetchResult AutoFetchResult `json:"auto_fetch_result,optional"` // 自动获取的结果（用于填充表单）
+	}
+	// 自动获取主机信息接口
+	AutoFetchHostInfoRequest {
+		HostIp            string `json:"host_ip"` // 主机IP
+		FetchFromCmdb     bool   `json:"fetch_from_cmdb,optional"` // 是否从CMDB获取
+		FetchFromClusters bool   `json:"fetch_from_clusters,optional"` // 是否从集群实例表获取
+	}
+	AutoFetchHostInfoResponse {
+		Success      bool                   `json:"success"`
+		Message      string                 `json:"message"`
+		HardwareInfo ManualHostHardwareInfo `json:"hardware_info,optional"`
+		Applications []HostApplicationInfo  `json:"applications,optional"`
+		IdcInfo      IdcInfo                `json:"idc_info,optional"`
+	}
+	// 用户认证相关类型
+	LoginRequest {
+		Username string `json:"username"`
+		Password string `json:"password"`
+	}
+	LoginResponse {
+		Code    int               `json:"code"`
+		Message string            `json:"message"`
+		Data    LoginResponseData `json:"data,optional"`
+	}
+	LoginResponseData {
+		Token       string   `json:"token"`
+		User        UserInfo `json:"user"`
+		LoginSource string   `json:"login_source"`
+		ExpiresAt   int64    `json:"expires_at"`
+	}
+	UserInfo {
+		ID          int64  `json:"id"`
+		Username    string `json:"username"`
+		Email       string `json:"email"`
+		DisplayName string `json:"display_name"`
+		IsAdmin     bool   `json:"is_admin"`
+		IsActive    bool   `json:"is_active"`
+		LoginSource string `json:"login_source"`
+		LastLoginAt string `json:"last_login_at"`
+	}
+	LogoutResponse {
+		Code    int    `json:"code"`
+		Message string `json:"message"`
+	}
+	UserInfoResponse {
+		Code    int      `json:"code"`
+		Message string   `json:"message"`
+		Data    UserInfo `json:"data,optional"`
+	}
+	// 统一外部资源同步相关类型
+	CreateExternalSyncTaskRequest {
+		TaskName       string `json:"task_name"` // 任务名称（必填）
+		Description    string `json:"description,optional"` // 任务描述
+		DataSource     string `json:"data_source"` // 数据源: "elasticsearch"/"es" 或 "cmsys"
+		EsEndpoint     string `json:"es_endpoint,optional"` // ES接口地址（data_source=es时使用）
+		EsIndexPattern string `json:"es_index_pattern,optional"` // ES索引模式（data_source=es时使用）
+		CronExpression string `json:"cron_expression"` // Cron表达式（必填）
+		QueryTimeRange string `json:"query_time_range,optional"` // 查询时间范围（如"7d","30d"）
+		CreatedBy      string `json:"created_by,optional"` // 创建人
+	}
+	CreateExternalSyncTaskResponse {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+		TaskId  int64  `json:"task_id,optional"`
+	}
+	UpdateExternalSyncTaskRequest {
+		TaskId         int64  `path:"task_id"` // 任务ID
+		TaskName       string `json:"task_name"` // 任务名称
+		Description    string `json:"description,optional"` // 任务描述
+		DataSource     string `json:"data_source"` // 数据源
+		EsEndpoint     string `json:"es_endpoint,optional"` // ES接口地址
+		EsIndexPattern string `json:"es_index_pattern,optional"` // ES索引模式
+		CronExpression string `json:"cron_expression"` // Cron表达式
+		QueryTimeRange string `json:"query_time_range,optional"` // 查询时间范围
+	}
+	UpdateExternalSyncTaskResponse {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+	}
+	DeleteExternalSyncTaskRequest {
+		TaskId int64 `path:"task_id"` // 任务ID
+	}
+	DeleteExternalSyncTaskResponse {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+	}
+	EnableExternalSyncTaskRequest {
+		Id        int64 `json:"id"` // 任务ID
+		IsEnabled bool  `json:"is_enabled"` // 是否启用
+	}
+	EnableExternalSyncTaskResponse {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
+	}
+	GetExternalSyncTasksRequest {
+		DataSource  string `form:"data_source,optional"` // 数据源过滤
+		EnabledOnly bool   `form:"enabled_only,optional"` // 是否只查询启用的任务
+	}
+	ExternalSyncTaskInfo {
+		Id                int64  `json:"id"`
+		TaskName          string `json:"task_name"`
+		Description       string `json:"description,optional"`
+		DataSource        string `json:"data_source"` // "elasticsearch" 或 "cmsys"
+		EsEndpoint        string `json:"es_endpoint,optional"`
+		EsIndexPattern    string `json:"es_index_pattern,optional"`
+		CronExpression    string `json:"cron_expression"`
+		QueryTimeRange    string `json:"query_time_range,optional"`
+		IsEnabled         bool   `json:"is_enabled"`
+		CreatedBy         string `json:"created_by,optional"`
+		CreatedAt         string `json:"created_at"`
+		UpdatedAt         string `json:"updated_at"`
+		LastExecutionTime string `json:"last_execution_time,optional"`
+		NextExecutionTime string `json:"next_execution_time,optional"`
+	}
+	GetExternalSyncTasksResponse {
+		Success bool                   `json:"success"`
+		Message string                 `json:"message"`
+		Tasks   []ExternalSyncTaskInfo `json:"tasks,optional"`
+	}
+	GetExternalSyncTaskDetailResponse {
+		Success bool                 `json:"success"`
+		Message string               `json:"message"`
+		Task    ExternalSyncTaskInfo `json:"task,optional"`
+	}
+	// 执行同步相关类型
+	ExecuteExternalSyncRequest {
+		DataSource     string   `json:"data_source"` // 数据源: "elasticsearch"/"es" 或 "cmsys"
+		TaskName       string   `json:"task_name,optional"` // 任务名称（用于记录）
+		HostIpList     []string `json:"host_ip_list"` // 主机IP列表
+		EsEndpoint     string   `json:"es_endpoint,optional"` // ES接口地址（data_source=es时可选）
+		EsIndexPattern string   `json:"es_index_pattern,optional"` // ES索引模式（data_source=es时可选）
+		QueryTimeRange string   `json:"query_time_range,optional"` // 查询时间范围
+		Query          string   `json:"query,optional"` // CMSys查询参数（data_source=cmsys时使用）
+	}
+	ExecuteExternalSyncByFileRequest {
+		DataSource     string `json:"data_source"` // 数据源: "elasticsearch"/"es" 或 "cmsys"
+		TaskName       string `json:"task_name,optional"` // 任务名称
+		FileContent    string `json:"file_content"` // 文件内容（换行符分隔的IP列表）
+		EsEndpoint     string `json:"es_endpoint,optional"` // ES接口地址
+		EsIndexPattern string `json:"es_index_pattern,optional"` // ES索引模式
+		QueryTimeRange string `json:"query_time_range,optional"` // 查询时间范围
+		Query          string `json:"query,optional"` // CMSys查询参数
+	}
+	ExecuteExternalSyncFullSyncRequest {
+		DataSource     string `json:"data_source"` // 数据源: "elasticsearch"/"es" 或 "cmsys"
+		GroupName      string `json:"group_name,optional"` // 组名（ES使用，默认"DB组"）
+		QueryTimeRange string `json:"query_time_range,optional"` // 查询时间范围（ES使用，默认"30d"）
+		EsEndpoint     string `json:"es_endpoint,optional"` // ES接口地址（可选）
+		TaskName       string `json:"task_name,optional"` // 任务名称（用于记录）
+		Query          string `json:"query,optional"` // CMSys查询参数
+	}
+	ExecuteExternalSyncFullSyncResponse {
+		Success               bool     `json:"success"`
+		Message               string   `json:"message"`
+		DataSource            string   `json:"data_source,optional"` // 数据源类型
+		ExecutionId           int64    `json:"execution_id,optional"` // 执行记录ID
+		TotalHosts            int32    `json:"total_hosts,optional"` // 总主机数
+		NewHostsCount         int32    `json:"new_hosts_count,optional"` // 新增到hosts_pool的主机数
+		UpdatedHostsCount     int32    `json:"updated_hosts_count,optional"` // 更新到server_resources的主机数
+		SuccessCount          int32    `json:"success_count,optional"` // 成功数（CMSys使用）
+		FailedCount           int32    `json:"failed_count,optional"` // 失败数量
+		NotInPoolCount        int32    `json:"not_in_pool_count,optional"` // 不在池中数量（ES使用）
+		NotInDatasourceCount  int32    `json:"not_in_datasource_count,optional"` // 数据源中不存在（CMSys使用）
+		NewHostIpList         []string `json:"new_host_ip_list,optional"` // 新增的主机IP列表（ES使用）
+		UpdatedHostIpList     []string `json:"updated_host_ip_list,optional"` // 更新的主机IP列表（ES使用）
+		SuccessIpList         []string `json:"success_ip_list,optional"` // 成功的IP列表（CMSys使用）
+		FailedIpList          []string `json:"failed_ip_list,optional"` // 失败的主机IP列表
+		NotInPoolIpList       []string `json:"not_in_pool_ip_list,optional"` // 不在池中的IP列表（ES使用）
+		NotInDatasourceIpList []string `json:"not_in_datasource_ip_list,optional"` // 数据源中不存在的IP列表（CMSys使用）
+	}
+	ExecuteExternalSyncResponse {
+		Success               bool     `json:"success"`
+		Message               string   `json:"message"`
+		DataSource            string   `json:"data_source,optional"` // 数据源类型
+		ExecutionId           int64    `json:"execution_id,optional"` // 执行记录ID
+		TotalHosts            int32    `json:"total_hosts,optional"` // 总主机数
+		SuccessCount          int32    `json:"success_count,optional"` // 成功数
+		FailedCount           int32    `json:"failed_count,optional"` // 失败数
+		NotInPoolCount        int32    `json:"not_in_pool_count,optional"` // 不在池中数量（ES使用）
+		NotInDatasourceCount  int32    `json:"not_in_datasource_count,optional"` // 数据源中不存在（CMSys使用）
+		NewHostsCount         int32    `json:"new_hosts_count,optional"` // 新增主机数（全量同步使用）
+		UpdatedHostsCount     int32    `json:"updated_hosts_count,optional"` // 更新主机数（全量同步使用）
+		SuccessIpList         []string `json:"success_ip_list,optional"` // 成功的IP列表
+		FailedIpList          []string `json:"failed_ip_list,optional"` // 失败的IP列表
+		NotInPoolIpList       []string `json:"not_in_pool_ip_list,optional"` // 不在池中的IP列表（ES使用）
+		NotInDatasourceIpList []string `json:"not_in_datasource_ip_list,optional"` // 数据源中不存在的IP列表（CMSys使用）
+		NewHostIpList         []string `json:"new_host_ip_list,optional"` // 新增主机IP列表（全量同步使用）
+		UpdatedHostIpList     []string `json:"updated_host_ip_list,optional"` // 更新主机IP列表（全量同步使用）
+	}
+	// 执行日志相关类型
+	GetExternalSyncExecutionLogsRequest {
+		TaskId     int64  `form:"task_id,optional"` // 任务ID（可选，为空则查询所有）
+		DataSource string `form:"data_source,optional"` // 数据源过滤
+		Limit      int32  `form:"limit,optional"` // 限制返回数量
+	}
+	ExternalSyncExecutionLogInfo {
+		Id                   int64  `json:"id"`
+		TaskId               int64  `json:"task_id,optional"`
+		TaskName             string `json:"task_name"`
+		DataSource           string `json:"data_source"` // "elasticsearch" 或 "cmsys"
+		ExecutionTime        string `json:"execution_time"`
+		ExecutionStatus      string `json:"execution_status"` // running, success, failed, partial
+		TotalHosts           int32  `json:"total_hosts"`
+		SuccessCount         int32  `json:"success_count"`
+		FailedCount          int32  `json:"failed_count"`
+		NotInPoolCount       int32  `json:"not_in_pool_count,optional"` // ES使用
+		NotInDatasourceCount int32  `json:"not_in_datasource_count,optional"` // CMSys使用
+		ErrorMessage         string `json:"error_message,optional"`
+		DurationMs           int32  `json:"duration_ms"`
+		QueryTimeRange       string `json:"query_time_range,optional"`
+		CreatedAt            string `json:"created_at"`
+	}
+	GetExternalSyncExecutionLogsResponse {
+		Success       bool                           `json:"success"`
+		Message       string                         `json:"message"`
+		ExecutionLogs []ExternalSyncExecutionLogInfo `json:"execution_logs,optional"`
+	}
+	ExternalSyncExecutionDetailInfo {
+		HostIp         string  `json:"host_ip"`
+		HostName       string  `json:"host_name"`
+		SyncStatus     string  `json:"sync_status"` // success, failed, not_in_pool, not_in_datasource
+		ErrorMessage   string  `json:"error_message,optional"`
+		MaxCpu         float64 `json:"max_cpu,optional"`
+		AvgCpu         float64 `json:"avg_cpu,optional"`
+		MaxMemory      float64 `json:"max_memory,optional"`
+		AvgMemory      float64 `json:"avg_memory,optional"`
+		MaxDisk        float64 `json:"max_disk,optional"`
+		AvgDisk        float64 `json:"avg_disk,optional"`
+		DataPointCount int32   `json:"data_point_count,optional"`
+		CreatedAt      string  `json:"created_at"`
+	}
+	GetExternalSyncExecutionDetailResponse {
+		Success          bool                              `json:"success"`
+		Message          string                            `json:"message"`
+		ExecutionLog     ExternalSyncExecutionLogInfo      `json:"execution_log,optional"`
+		ExecutionDetails []ExternalSyncExecutionDetailInfo `json:"execution_details,optional"`
+	}
+)
+
+// 无需认证的接口
+service cmdb-api {
+	@handler Login
+	post /api/auth/login (LoginRequest) returns (LoginResponse)
+
+	@handler Logout
+	post /api/auth/logout returns (LogoutResponse)
+
+	@handler CASLogin
+	get /api/auth/cas
+}
+
+// 需要认证的接口
+@server (
+	middleware: Auth
+)
+service cmdb-api {
+	@handler UserInfo
+	get /api/auth/userinfo returns (UserInfoResponse)
+
+	@handler GetHostsPoolDetail
+	get /api/cmdb/v1/get_hosts_pool_detail returns (HostPoolListResponse)
+
+	@handler GetHostDetail
+	get /api/cmdb/v1/get_host_detail/:id returns (HostPool)
+
+	@handler CollectApplications
+	post /api/cmdb/v1/collect_applications returns (BaseResponse)
+
+	@handler AddHostsApplication
+	post /api/cmdb/v1/add_hosts_application (AddHostsApplicationRequest) returns (HostApplicationResponse)
+
+	@handler ModifyHostsApplication
+	put /api/cmdb/v1/modify_hosts_application (ModifyHostsApplicationRequest) returns (HostApplicationResponse)
+
+	@handler DeleteHostsApplication
+	delete /api/cmdb/v1/delete_hosts_application (DeleteHostsApplicationRequest) returns (HostApplicationResponse)
+
+	@handler GetClusterUsage
+	get /api/cmdb/v1/get_cluster_usage returns (IDCUsageListResponse)
+
+	@handler GetClusterResourceUsage
+	get /api/cmdb/v1/cluster-resource-usage returns (ServerResourceListResponse)
+
+	@handler GetClusterResourceSummary
+	get /api/cmdb/v1/cluster-resource-summary returns (ClusterResourceSummaryListResponse)
+
+	@handler GetResourceAlerts
+	get /api/cmdb/v1/resource-alerts returns (ServerResourceListResponse)
+
+	@handler GetDiskFullPrediction
+	get /api/cmdb/v1/disk-full-prediction returns (DiskPredictionResponse)
+
+	@handler GetServerResources
+	get /api/cmdb/v1/server-resources (ServerResourceRequest) returns (ServerResourceListResponse)
+
+	@handler GetServerResourcesMax
+	get /api/cmdb/v1/server-resources-max (ServerResourceRequest) returns (ServerResourceMaxListResponse)
+
+	@handler GetClusterResources
+	get /api/cmdb/v1/cluster-resources (ClusterResourceRequest) returns (ClusterResourceListResponse)
+
+	@handler GetClusterResourcesMax
+	get /api/cmdb/v1/cluster-resources-max (ClusterResourceRequest) returns (ClusterResourceMaxListResponse)
+
+	@handler GetDiskPrediction
+	get /api/cmdb/v1/disk-prediction (ServerResourceRequest) returns (DiskPredictionListResponse)
+
+	@handler InsertServerResource
+	post /api/cmdb/v1/insert-server-resource (ServerResource) returns (BaseResponse)
+
+	@handler GetClusterGroups
+	get /api/cmdb/v1/cluster-groups returns (ClusterGroupListResponse)
+
+	@handler SyncClusterGroups
+	post /api/cmdb/v1/sync-cluster-groups returns (SyncClusterGroupsResponse)
+
+	@handler SyncHostsFromClusters
+	post /api/cmdb/v1/sync-hosts-from-clusters returns (SyncClusterGroupsResponse)
+
+	@handler GenerateClusterGroupReport
+	get /api/cmdb/v1/cluster-group-report returns (ClusterGroupListResponse)
+
+	@handler GenerateIDCReport
+	get /api/cmdb/v1/idc-report returns (IDCUsageListResponse)
+
+	@handler GenerateAndSendReport
+	post /api/cmdb/v1/generate-and-send-report (ReportRequest) returns (BaseResponse)
+
+	@handler TriggerReport
+	post /api/cmdb/v1/trigger-report (ReportRequest) returns (BaseResponse)
+
+	@handler SendEmail
+	post /api/cmdb/v1/send-email (EmailRequest) returns (BaseResponse)
+
+	@handler AnalyzeResourceUsage
+	post /api/cmdb/v1/analyze_resource_usage (ResourceUsageData) returns (BaseResponse)
+
+	@handler GetBackupRestoreCheckInfo
+	get /api/cmdb/v1/backup-restore-check-info returns (BackupRestoreCheckInfoListResponse)
+
+	@handler GetClusterConfirmSummary
+	get /api/cmdb/v1/cluster-confirm-summary returns (ClusterConfirmSummary)
+
+	@handler LoadServerMetricsCSV
+	post /api/cmdb/v1/load-server-metrics-csv (LoadServerMetricsCSVRequest) returns (LoadServerMetricsCSVProgressResponse)
+
+	@handler GetServerMetricsCSVProgress
+	get /api/cmdb/v1/server-metrics-csv-progress returns (LoadServerMetricsCSVProgressResponse)
+
+	@handler VerifyMonitoringDataOptions
+	options /api/cmdb/v1/verify-monitoring-data returns (BaseResponse)
+
+	@handler VerifyMonitoringData
+	post /api/cmdb/v1/verify-monitoring-data (MonitoringVerificationRequest) returns (MonitoringVerificationResponse)
+
+	@handler HardwareResourceVerification
+	post /api/cmdb/v1/hardware-resource-verification (HardwareResourceVerificationRequest) returns (HardwareResourceVerificationResponse)
+
+	@handler GetHardwareResourceVerificationStatus
+	get /api/cmdb/v1/hardware-resource-verification-status (HardwareResourceVerificationStatusRequest) returns (HardwareResourceVerificationStatusResponse)
+
+	@handler GetHardwareResourceVerificationHistory
+	get /api/cmdb/v1/hardware-resource-verification-history (HardwareResourceVerificationHistoryRequest) returns (HardwareResourceVerificationHistoryResponse)
+
+	// 定时任务相关路由
+	@handler CreateScheduledTask
+	post /api/cmdb/v1/scheduled-tasks (CreateScheduledTaskRequest) returns (CreateScheduledTaskResponse)
+
+	@handler GetScheduledTasks
+	get /api/cmdb/v1/scheduled-tasks (GetScheduledTasksRequest) returns (GetScheduledTasksResponse)
+
+	@handler UpdateScheduledTask
+	put /api/cmdb/v1/scheduled-tasks/:id (UpdateScheduledTaskRequest) returns (UpdateScheduledTaskResponse)
+
+	@handler EnableScheduledTask
+	put /api/cmdb/v1/scheduled-tasks/enable (EnableScheduledTaskRequest) returns (EnableScheduledTaskResponse)
+
+	@handler DeleteScheduledTask
+	delete /api/cmdb/v1/scheduled-tasks/:id (DeleteScheduledTaskRequest) returns (DeleteScheduledTaskResponse)
+
+	@handler GetScheduledTaskExecutionHistory
+	get /api/cmdb/v1/scheduled-tasks/execution-history (GetScheduledTaskExecutionHistoryRequest) returns (GetScheduledTaskExecutionHistoryResponse)
+
+	@handler GetScheduledTaskExecutionDetails
+	get /api/cmdb/v1/scheduled-tasks/execution-details/:execution_task_id returns (GetScheduledTaskExecutionDetailsResponse)
+
+	// 硬件信息获取接口
+	@handler FetchHostsHardwareInfo
+	post /api/cmdb/v1/fetch-hosts-hardware-info (FetchHostsHardwareInfoRequest) returns (FetchHostsHardwareInfoResponse)
+
+	// 外部CMDB同步接口
+	@handler SyncExternalCmdb
+	post /api/cmdb/v1/sync-external-cmdb (SyncExternalCmdbRequest) returns (SyncExternalCmdbResponse)
+
+	// 手动添加主机接口
+	@handler ManualAddHost
+	post /api/cmdb/v1/manual-add-host (ManualAddHostRequest) returns (ManualAddHostResponse)
+
+	// 自动获取主机信息接口
+	@handler AutoFetchHostInfo
+	post /api/cmdb/v1/auto-fetch-host-info (AutoFetchHostInfoRequest) returns (AutoFetchHostInfoResponse)
+
+	// IDC机房管理接口
+	@handler GetIdcList
+	get /api/cmdb/v1/idc-list returns (IdcListResponse)
+
+	// 统一的外部资源同步接口
+	@handler CreateExternalSyncTask
+	post /api/cmdb/v1/external-sync-tasks (CreateExternalSyncTaskRequest) returns (CreateExternalSyncTaskResponse)
+
+	@handler UpdateExternalSyncTask
+	put /api/cmdb/v1/external-sync-tasks/:task_id (UpdateExternalSyncTaskRequest) returns (UpdateExternalSyncTaskResponse)
+
+	@handler DeleteExternalSyncTask
+	delete /api/cmdb/v1/external-sync-tasks/:task_id (DeleteExternalSyncTaskRequest) returns (DeleteExternalSyncTaskResponse)
+
+	@handler EnableExternalSyncTask
+	put /api/cmdb/v1/external-sync-tasks/enable (EnableExternalSyncTaskRequest) returns (EnableExternalSyncTaskResponse)
+
+	@handler GetExternalSyncTasks
+	get /api/cmdb/v1/external-sync-tasks (GetExternalSyncTasksRequest) returns (GetExternalSyncTasksResponse)
+
+	@handler GetExternalSyncTaskDetail
+	get /api/cmdb/v1/external-sync-tasks/:task_id returns (GetExternalSyncTaskDetailResponse)
+
+	@handler ExecuteExternalSync
+	post /api/cmdb/v1/external-sync-execute (ExecuteExternalSyncRequest) returns (ExecuteExternalSyncResponse)
+
+	@handler ExecuteExternalSyncByFile
+	post /api/cmdb/v1/external-sync-execute-file (ExecuteExternalSyncByFileRequest) returns (ExecuteExternalSyncResponse)
+
+	@handler ExecuteExternalSyncFullSync
+	post /api/cmdb/v1/external-sync-full-sync (ExecuteExternalSyncFullSyncRequest) returns (ExecuteExternalSyncFullSyncResponse)
+
+	@handler GetExternalSyncExecutionLogs
+	get /api/cmdb/v1/external-sync-execution-logs (GetExternalSyncExecutionLogsRequest) returns (GetExternalSyncExecutionLogsResponse)
+
+	@handler GetExternalSyncExecutionDetail
+	get /api/cmdb/v1/external-sync-execution-detail/:execution_id returns (GetExternalSyncExecutionDetailResponse)
+}
+
+// Mock ES查询接口 - 用于开发测试，无需认证
+service cmdb-api {
+	@handler MockEsQuery
+	post /platform/query/es
+
+	@handler MockCMSysAuth
+	post /platform/cmsys/auth
+
+	@handler MockCMSysData
+	get /platform/cmsys/data
+
+	@handler MockCMSysDataByIPs
+	post /platform/cmsys/data-by-ips
+}
+

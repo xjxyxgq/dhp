@@ -1,0 +1,109 @@
+package model
+
+import (
+	"database/sql"
+	"fmt"
+	"time"
+
+	"github.com/zeromicro/go-zero/core/stores/cache"
+	"github.com/zeromicro/go-zero/core/stores/sqlc"
+	"github.com/zeromicro/go-zero/core/stores/sqlx"
+)
+
+var _ ScheduledTaskHistoryModel = (*customScheduledTaskHistoryModel)(nil)
+
+type (
+	// ScheduledTaskHistoryModel 定时任务执行历史模型接口
+	ScheduledTaskHistoryModel interface {
+		Insert(data *ScheduledTaskExecutionHistory) (sql.Result, error)
+		FindByTaskId(scheduledTaskId int64, limit int32) ([]*ScheduledTaskExecutionHistory, error)
+		FindByExecutionTaskId(executionTaskId string) (*ScheduledTaskExecutionHistory, error)
+		UpdateExecutionStatus(id int64, status string, totalHosts, successHosts, failedHosts int32, errorMessage string) error
+	}
+
+	customScheduledTaskHistoryModel struct {
+		*defaultScheduledTaskHistoryModel
+	}
+
+	defaultScheduledTaskHistoryModel struct {
+		sqlc.CachedConn
+		table string
+	}
+
+	// ScheduledTaskExecutionHistory 定时任务执行历史结构体
+	ScheduledTaskExecutionHistory struct {
+		Id              int64          `db:"id"`
+		ScheduledTaskId int64          `db:"scheduled_task_id"`
+		ExecutionTaskId string         `db:"execution_task_id"`
+		ExecutionTime   time.Time      `db:"execution_time"`
+		ExecutionStatus string         `db:"execution_status"`
+		TotalHosts      int32          `db:"total_hosts"`
+		SuccessHosts    int32          `db:"success_hosts"`
+		FailedHosts     int32          `db:"failed_hosts"`
+		ErrorMessage    sql.NullString `db:"error_message"`
+	}
+)
+
+// NewScheduledTaskHistoryModel 创建定时任务执行历史模型
+func NewScheduledTaskHistoryModel(conn sqlx.SqlConn, c cache.CacheConf) ScheduledTaskHistoryModel {
+	return &customScheduledTaskHistoryModel{
+		defaultScheduledTaskHistoryModel: newScheduledTaskHistoryModel(conn, c),
+	}
+}
+
+func newScheduledTaskHistoryModel(conn sqlx.SqlConn, c cache.CacheConf) *defaultScheduledTaskHistoryModel {
+	return &defaultScheduledTaskHistoryModel{
+		CachedConn: sqlc.NewConn(conn, c),
+		table:      "`scheduled_task_execution_history`",
+	}
+}
+
+// Insert 插入执行历史记录
+func (m *customScheduledTaskHistoryModel) Insert(data *ScheduledTaskExecutionHistory) (sql.Result, error) {
+	query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?)", m.table, historyRowsExpectAutoSet)
+	ret, err := m.ExecNoCache(query, data.ScheduledTaskId, data.ExecutionTaskId, data.ExecutionTime, data.ExecutionStatus, data.TotalHosts, data.SuccessHosts, data.FailedHosts, data.ErrorMessage)
+	return ret, err
+}
+
+// FindByTaskId 根据定时任务ID查找执行历史
+func (m *customScheduledTaskHistoryModel) FindByTaskId(scheduledTaskId int64, limit int32) ([]*ScheduledTaskExecutionHistory, error) {
+	if limit <= 0 {
+		limit = 50 // 默认限制
+	}
+	
+	query := fmt.Sprintf("select %s from %s where `scheduled_task_id` = ? order by `execution_time` desc limit ?", historyRows, m.table)
+	
+	var resp []*ScheduledTaskExecutionHistory
+	err := m.QueryRowsNoCache(&resp, query, scheduledTaskId, limit)
+	return resp, err
+}
+
+// FindByExecutionTaskId 根据执行任务的ID查找执行历史
+func (m *customScheduledTaskHistoryModel) FindByExecutionTaskId(executionTaskId string) (*ScheduledTaskExecutionHistory, error) {
+	query := fmt.Sprintf("select %s from %s where `execution_task_id` = ? limit 1", historyRows, m.table)
+	var resp ScheduledTaskExecutionHistory
+	err := m.QueryRowNoCache(&resp, query, executionTaskId)
+	switch err {
+	case nil:
+		return &resp, nil
+	case sqlc.ErrNotFound:
+		return nil, ErrNotFound
+	default:
+		return nil, err
+	}
+}
+
+// UpdateExecutionStatus 更新执行状态
+func (m *customScheduledTaskHistoryModel) UpdateExecutionStatus(id int64, status string, totalHosts, successHosts, failedHosts int32, errorMessage string) error {
+	var errMsg sql.NullString
+	if errorMessage != "" {
+		errMsg = sql.NullString{String: errorMessage, Valid: true}
+	}
+	
+	query := fmt.Sprintf("update %s set `execution_status` = ?, `total_hosts` = ?, `success_hosts` = ?, `failed_hosts` = ?, `error_message` = ? where `id` = ?", m.table)
+	_, err := m.ExecNoCache(query, status, totalHosts, successHosts, failedHosts, errMsg, id)
+	return err
+}
+
+var historyRows = "`id`,`scheduled_task_id`,`execution_task_id`,`execution_time`,`execution_status`,`total_hosts`,`success_hosts`,`failed_hosts`,`error_message`"
+var historyRowsExpectAutoSet = "`scheduled_task_id`,`execution_task_id`,`execution_time`,`execution_status`,`total_hosts`,`success_hosts`,`failed_hosts`,`error_message`"

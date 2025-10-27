@@ -1,0 +1,177 @@
+package model
+
+import (
+	"database/sql"
+	"fmt"
+	"strings"
+	"time"
+
+	"github.com/zeromicro/go-zero/core/stores/cache"
+	"github.com/zeromicro/go-zero/core/stores/sqlc"
+	"github.com/zeromicro/go-zero/core/stores/sqlx"
+)
+
+var _ ScheduledTaskModel = (*customScheduledTaskModel)(nil)
+
+type (
+	// ScheduledTaskModel 定时任务模型接口
+	ScheduledTaskModel interface {
+		Insert(data *ScheduledTask) (sql.Result, error)
+		Update(data *ScheduledTask) error
+		Delete(id int64) error
+		FindOne(id int64) (*ScheduledTask, error)
+		FindAll(resourceType string, enabledOnly bool) ([]*ScheduledTask, error)
+		FindByExecutionTaskId(executionTaskId int64) (*ScheduledTask, error)
+		UpdateExecutionTime(id int64, lastExecutionTime, nextExecutionTime *time.Time) error
+		EnableTask(id int64, enabled bool) error
+	}
+
+	customScheduledTaskModel struct {
+		*defaultScheduledTaskModel
+	}
+
+	// ScheduledTask 定时任务结构体
+	ScheduledTask struct {
+		Id                int64          `db:"id"`
+		TaskName          string         `db:"task_name"`
+		Description       sql.NullString `db:"description"`
+		CronExpression    string         `db:"cron_expression"`
+		HostIpList        string         `db:"host_ip_list"`        // JSON格式
+		ResourceType      string         `db:"resource_type"`
+		TargetPercent     int32          `db:"target_percent"`
+		Duration          int32          `db:"duration"`
+		ScriptParams      sql.NullString `db:"script_params"`
+		ForceExecution    bool           `db:"force_execution"`
+		IsEnabled         bool           `db:"is_enabled"`
+		CreatedBy         sql.NullString `db:"created_by"`
+		CreateTime        time.Time      `db:"create_time"`
+		UpdateTime        time.Time      `db:"update_time"`
+		LastExecutionTime sql.NullTime   `db:"last_execution_time"`
+		NextExecutionTime sql.NullTime   `db:"next_execution_time"`
+	}
+
+	defaultScheduledTaskModel struct {
+		sqlc.CachedConn
+		table string
+	}
+)
+
+// NewScheduledTaskModel 创建定时任务模型
+func NewScheduledTaskModel(conn sqlx.SqlConn, c cache.CacheConf) ScheduledTaskModel {
+	return &customScheduledTaskModel{
+		defaultScheduledTaskModel: newScheduledTaskModel(conn, c),
+	}
+}
+
+func newScheduledTaskModel(conn sqlx.SqlConn, c cache.CacheConf) *defaultScheduledTaskModel {
+	return &defaultScheduledTaskModel{
+		CachedConn: sqlc.NewConn(conn, c),
+		table:      "`scheduled_hardware_verification`",
+	}
+}
+
+// Insert 插入定时任务
+func (m *customScheduledTaskModel) Insert(data *ScheduledTask) (sql.Result, error) {
+	query := fmt.Sprintf("insert into %s (%s) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", m.table, scheduledTaskRowsExpectAutoSet)
+	ret, err := m.ExecNoCache(query, data.TaskName, data.Description, data.CronExpression, data.HostIpList, data.ResourceType, data.TargetPercent, data.Duration, data.ScriptParams, data.ForceExecution, data.IsEnabled, data.CreatedBy)
+	return ret, err
+}
+
+// Update 更新定时任务
+func (m *customScheduledTaskModel) Update(data *ScheduledTask) error {
+	query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, scheduledTaskRowsWithPlaceHolder)
+	_, err := m.ExecNoCache(query, data.TaskName, data.Description, data.CronExpression, data.HostIpList, data.ResourceType, data.TargetPercent, data.Duration, data.ScriptParams, data.ForceExecution, data.IsEnabled, data.CreatedBy, data.Id)
+	return err
+}
+
+// Delete 删除定时任务
+func (m *customScheduledTaskModel) Delete(id int64) error {
+	query := fmt.Sprintf("delete from %s where `id` = ?", m.table)
+	_, err := m.ExecNoCache(query, id)
+	return err
+}
+
+// FindOne 查找单个定时任务
+func (m *customScheduledTaskModel) FindOne(id int64) (*ScheduledTask, error) {
+	query := fmt.Sprintf("select %s from %s where `id` = ? limit 1", scheduledTaskRows, m.table)
+	var resp ScheduledTask
+	err := m.QueryRowNoCache(&resp, query, id)
+	switch err {
+	case nil:
+		return &resp, nil
+	case sqlc.ErrNotFound:
+		return nil, ErrNotFound
+	default:
+		return nil, err
+	}
+}
+
+// FindAll 查找所有定时任务
+func (m *customScheduledTaskModel) FindAll(resourceType string, enabledOnly bool) ([]*ScheduledTask, error) {
+	var conditions []string
+	var args []interface{}
+
+	if resourceType != "" {
+		conditions = append(conditions, "`resource_type` = ?")
+		args = append(args, resourceType)
+	}
+
+	if enabledOnly {
+		conditions = append(conditions, "`is_enabled` = ?")
+		args = append(args, true)
+	}
+
+	whereClause := ""
+	if len(conditions) > 0 {
+		whereClause = "WHERE " + strings.Join(conditions, " AND ")
+	}
+
+	query := fmt.Sprintf("select %s from %s %s order by `create_time` desc", scheduledTaskRows, m.table, whereClause)
+	
+	var resp []*ScheduledTask
+	err := m.QueryRowsNoCache(&resp, query, args...)
+	return resp, err
+}
+
+// UpdateExecutionTime 更新执行时间
+func (m *customScheduledTaskModel) UpdateExecutionTime(id int64, lastExecutionTime, nextExecutionTime *time.Time) error {
+	var lastExecTime, nextExecTime sql.NullTime
+	
+	if lastExecutionTime != nil {
+		lastExecTime = sql.NullTime{Time: *lastExecutionTime, Valid: true}
+	}
+	
+	if nextExecutionTime != nil {
+		nextExecTime = sql.NullTime{Time: *nextExecutionTime, Valid: true}
+	}
+	
+	query := fmt.Sprintf("update %s set `last_execution_time` = ?, `next_execution_time` = ?, `update_time` = CURRENT_TIMESTAMP where `id` = ?", m.table)
+	_, err := m.ExecNoCache(query, lastExecTime, nextExecTime, id)
+	return err
+}
+
+// FindByExecutionTaskId 根据执行任务的ID查找定时任务
+func (m *customScheduledTaskModel) FindByExecutionTaskId(executionTaskId int64) (*ScheduledTask, error) {
+	query := fmt.Sprintf("select %s from %s where `id` = ? limit 1", scheduledTaskRows, m.table)
+	var resp ScheduledTask
+	err := m.QueryRowNoCache(&resp, query, executionTaskId)
+	switch err {
+	case nil:
+		return &resp, nil
+	case sqlc.ErrNotFound:
+		return nil, ErrNotFound
+	default:
+		return nil, err
+	}
+}
+
+// EnableTask 启用/禁用任务
+func (m *customScheduledTaskModel) EnableTask(id int64, enabled bool) error {
+	query := fmt.Sprintf("update %s set `is_enabled` = ?, `update_time` = CURRENT_TIMESTAMP where `id` = ?", m.table)
+	_, err := m.ExecNoCache(query, enabled, id)
+	return err
+}
+
+var scheduledTaskRows = "`id`,`task_name`,`description`,`cron_expression`,`host_ip_list`,`resource_type`,`target_percent`,`duration`,`script_params`,`force_execution`,`is_enabled`,`created_by`,`create_time`,`update_time`,`last_execution_time`,`next_execution_time`"
+var scheduledTaskRowsExpectAutoSet = "`task_name`,`description`,`cron_expression`,`host_ip_list`,`resource_type`,`target_percent`,`duration`,`script_params`,`force_execution`,`is_enabled`,`created_by`"
+var scheduledTaskRowsWithPlaceHolder = "`task_name` = ?,`description` = ?,`cron_expression` = ?,`host_ip_list` = ?,`resource_type` = ?,`target_percent` = ?,`duration` = ?,`script_params` = ?,`force_execution` = ?,`is_enabled` = ?,`created_by` = ?"

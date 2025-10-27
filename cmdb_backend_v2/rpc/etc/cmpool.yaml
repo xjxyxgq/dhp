@@ -1,0 +1,48 @@
+Name: cmpool.rpc
+ListenOn: 0.0.0.0:8080
+Etcd:
+  Hosts:
+  - 127.0.0.1:2379
+  Key: cmpool.rpc
+DataSource: myuser:myuser@tcp(127.0.0.1:3311)/cmdb2?charset=utf8mb4&parseTime=true&loc=Local
+Timeout: 0
+# 硬件资源验证脚本配置
+HardwareVerification:
+  ScriptBasePath: "/Users/xuguoqiang/SynologyDrive/Backup/MI_office_notebook/D/myworkspace/nucc_workspace/program/src/nucc.com/cmpool_cursor/tools/scripts"
+  RemoteUser: "xuguoqiang"  # SSH用户，建议配置SSH密钥认证
+  UseSudo: true       # 是否使用sudo执行脚本
+
+# 认证配置
+SSOAuth:
+  EnableCAS: false     # 是否启用CAS单点登录
+  CASServerURL: ""     # CAS服务器地址，如：https://cas.example.com/cas
+  ServiceURL: ""       # 当前服务的地址，如：http://localhost:8888
+  JWTSecret: "your-jwt-secret-key-change-it-in-production"  # JWT签名密钥
+  TokenExpireHours: 24  # Token过期时间（小时）
+
+# 外部API配置
+ExternalAPI:
+  CmdbUrl: "https://api.cmdb.local.numc.int"  # CMDB API地址
+  CmdbAppCode: "db"                           # CMDB应用编码
+  CmdbSecret: "02f37a382df8469cb745a0a55a76aabs"  # CMDB密钥
+  Freak: true
+
+# ES数据源配置
+ESDataSource:
+  #DefaultEndpoint: "http://phoenix.local.com/platform/query/es"  # 默认ES接口地址
+  DefaultEndpoint: "http://localhost:8888/platform/query/es"  # Mock接口地址（开发测试用）
+  DefaultIndexPattern: "cluster*:data-zabbix-host-monitor-*"     # 默认ES索引模式
+  TimeoutSeconds: 60                                             # 请求超时时间(秒)
+
+# CMSys数据源配置（从HTTP接口同步数据）
+CMSysDataSource:
+  # 开发测试环境使用Mock接口
+  AuthEndpoint: "http://localhost:8888/platform/cmsys/auth"     # 认证接口地址（Mock）
+  DataEndpoint: "http://localhost:8888/platform/cmsys/data"     # 数据接口地址（Mock）
+  # 生产环境使用真实接口（注释掉Mock配置，取消下面的注释）
+  # AuthEndpoint: "https://api.cmsys.example.com/auth"     # 认证接口地址
+  # DataEndpoint: "https://api.cmsys.example.com/data"     # 数据接口地址
+  AppCode: "DB"                                          # 应用代码
+  AppSecret: "your-app-secret-here"                      # 应用密钥
+  Operator: "admin"                                      # 操作员标识
+  TimeoutSeconds: 60                                     # 请求超时时间(秒)

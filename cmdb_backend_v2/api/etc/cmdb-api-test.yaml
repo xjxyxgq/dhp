@@ -1,0 +1,49 @@
+# CMDB API 服务测试配置文件
+Name: cmdb-api-test
+Host: 0.0.0.0
+Port: 8889
+
+# RPC 服务配置
+RpcConfig:
+  Endpoints:
+    - 127.0.0.1:8081
+
+# 超时配置
+Timeout: 30000  # 30秒
+
+# 日志配置
+Log:
+  ServiceName: cmdb-api-test
+  Mode: console
+  Level: debug
+
+# 跨域配置
+CORS:
+  AllowOrigins:
+    - "*"
+  AllowMethods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - OPTIONS
+  AllowHeaders:
+    - Content-Type
+    - Authorization
+    - X-Requested-With
+
+# 认证配置
+Auth:
+  AccessSecret: "test-access-secret-key"
+  AccessExpire: 7200  # 2小时
+
+# 限流配置
+RateLimit:
+  Rate: 100   # 每秒100次请求
+  Burst: 200  # 突发200次请求
+
+# 监控配置
+Prometheus:
+  Host: localhost
+  Port: 9092
+  Path: /metrics

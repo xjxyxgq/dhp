@@ -1,0 +1,42 @@
+Name: cmdb-api
+Host: 0.0.0.0
+Port: 8888
+Timeout: 0
+
+# CORS配置
+CorsConf:
+  AccessControlAllowOrigin: "*"
+  AccessControlAllowMethods: "GET,POST,PUT,DELETE,OPTIONS"
+  AccessControlAllowHeaders: "Content-Type,Authorization,X-Requested-With,Accept,Origin"
+  AccessControlExposeHeaders: "Content-Length,Content-Type"
+  AccessControlMaxAge: 86400
+
+# RPC 服务配置
+RpcConfig:
+  Endpoints:
+    - 127.0.0.1:8080
+  Timeout: 0
+
+# MySQL数据库配置
+DataSource: root:password@tcp(localhost:3306)/cmdb?charset=utf8mb4&parseTime=True&loc=Local
+
+# Redis配置（可选）
+Redis:
+  Key: cmpool-api
+  Host: 127.0.0.1:6379
+  Type: node
+  Pass: "123456"
+
+# 日志配置
+#Log:
+#  ServiceName: cmdb-api
+#  Mode: console
+#  Level: info
+
+# 认证配置
+SSOAuth:
+  EnableCAS: false     # 是否启用CAS单点登录
+  CASServerURL: ""     # CAS服务器地址，如：https://cas.example.com/cas
+  ServiceURL: "http://localhost:8888"  # 当前服务的地址
+  JWTSecret: "your-jwt-secret-key-change-it-in-production"  # JWT签名密钥
+  TokenExpireHours: 24  # Token过期时间（小时）
