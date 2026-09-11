@@ -1,4 +1,4 @@
-module github.com/xjxyxgq/dhp6
+module github.com/xjxyxgq/dhp
 
 go 1.19
 
